@@ -1,0 +1,41 @@
+body {
+  font-family: Georgia, serif;
+  background: #f9f9f9;
+  color: #222;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+img {
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+}
+
+.caption {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+p {
+  line-height: 1.7;
+}
