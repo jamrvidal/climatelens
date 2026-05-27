@@ -22,6 +22,7 @@ h2 {
 
 .section {
   margin-bottom: 2.5rem;
+  padding: 1.25rem;
 }
 
 img {
@@ -39,6 +40,7 @@ img {
 p {
   line-height: 1.7;
 }
+
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --bg:#f7f4ef; --surface:#fff; --dark:#0a2a4a; --mid:#34495e; --muted:#7f8c8d; --border:rgba(10,42,74,.12); --accent:#1a5276; --warm:#d35400; --cool:#1a8cad; --green:#2e7d32; }
