@@ -42,7 +42,7 @@ p {
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --bg:#f7f4ef; --surface:#fff; --dark:#0a2a4a; --mid:#34495e; --muted:#7f8c8d; --border:rgba(10,42,74,.12); --accent:#1a5276; --warm:#d35400; --cool:#1a8cad; --green:#2e7d32; }
-body { font-family:'Source Sans 3',sans-serif; background:var(--bg); color:var(--dark); }
+body { font-family:'Source Sans 3',sans-serif; background:var(--bg); color:var(--dark); padding: 2rem; }
 .page { max-width:900px; margin:0 auto; padding:2.5rem 1.5rem; }
 h1 { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; margin-bottom:.4rem; }
 .subtitle { font-size:.95rem; color:var(--muted); margin-bottom:2rem; line-height:1.6; max-width:690px; }
