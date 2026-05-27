@@ -1,19 +1,19 @@
-body {
+/* body {
   font-family: Georgia, serif;
   background: #f9f9f9;
   color: #222;
   padding: 2rem;
-}
+} */
 
 .container {
   max-width: 720px;
   margin: 0 auto;
 }
 
-h1 {
+/* h1 {
   font-size: 1.8rem;
   margin-bottom: 2rem;
-}
+} */
 
 h2 {
   font-size: 1.2rem;
@@ -39,3 +39,36 @@ img {
 p {
   line-height: 1.7;
 }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#f7f4ef; --surface:#fff; --dark:#0a2a4a; --mid:#34495e; --muted:#7f8c8d; --border:rgba(10,42,74,.12); --accent:#1a5276; --warm:#d35400; --cool:#1a8cad; --green:#2e7d32; }
+body { font-family:'Source Sans 3',sans-serif; background:var(--bg); color:var(--dark); }
+.page { max-width:900px; margin:0 auto; padding:2.5rem 1.5rem; }
+h1 { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; margin-bottom:.4rem; }
+.subtitle { font-size:.95rem; color:var(--muted); margin-bottom:2rem; line-height:1.6; max-width:690px; }
+.year-control,.panel-bg,.history-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 1px 12px rgba(10,42,74,.05); }
+.year-control { padding:1.25rem 1.5rem; margin-bottom:1.25rem; }
+.year-row { display:flex; align-items:center; gap:16px; }
+.year-display { font-family:'Playfair Display',serif; font-size:2.8rem; font-weight:700; min-width:90px; line-height:1; }
+.year-slider { flex:1; }
+.year-range { display:flex; justify-content:space-between; font-size:.75rem; color:var(--muted); margin-top:4px; }
+.data-note { display:inline-flex; align-items:center; gap:6px; font-size:.82rem; font-weight:600; padding:5px 14px; border-radius:4px; margin-top:.75rem; background:#f0f4f8; color:var(--mid); border:1px solid var(--border); }
+.data-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); }
+.panel-bg { padding:1.25rem; margin-bottom:1.25rem; }
+.gauge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+@media(max-width:600px){.gauge-grid{grid-template-columns:1fr}}
+.gauge-card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:1rem 1.25rem .75rem; box-shadow:0 1px 8px rgba(10,42,74,.04); }
+.gauge-label,.history-title { font-size:.76rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+.gauge-name { font-size:.9rem; color:var(--dark); margin-bottom:.75rem; }
+.gauge-value { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; }
+.gauge-unit { font-family:'Source Sans 3',sans-serif; font-size:.9rem; color:var(--muted); margin-left:2px; }
+.gauge-delta { font-size:.78rem; margin-top:2px; font-weight:600; }
+.gauge-delta.up { color:var(--warm); } .gauge-delta.down { color:var(--cool); } .gauge-delta.same { color:var(--muted); }
+.gauge-bar-track { height:6px; background:#eee; border-radius:3px; margin-top:10px; overflow:hidden; }
+.gauge-bar-fill { height:100%; border-radius:3px; transition:width .5s ease; }
+.history-card { padding:1.25rem 1.5rem 1rem; }
+.history-label { font-family:'Playfair Display',serif; font-size:1rem; margin-bottom:1rem; }
+.legend { display:flex; gap:1.5rem; margin-top:.75rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:.78rem; color:var(--mid); }
+.leg-swatch { width:20px; height:3px; border-radius:2px; }
+svg text { font-family:'Source Sans 3',sans-serif; }
