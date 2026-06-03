@@ -138,15 +138,43 @@ function buildMap(caFeature) {
   const floatLabel = document.getElementById('float-label');
   const mapWrap    = document.getElementById('map-wrap');
  
-  /* ── Selected-cells state & colour palette ──────────────────────── */
-  const PALETTE = [
-    '#c0392b','#2980b9','#27ae60','#d35400','#8e44ad',
-    '#16a085','#f39c12','#2c3e50','#1abc9c','#e74c3c'
+  /* ── California geographic regions (lat/lon bounding boxes) ──────── */
+  const CA_REGIONS = [
+    { name: 'North Coast',        color: '#2980b9', latMin: 38.5, latMax: 42.0, lonMin: -124.5, lonMax: -122.5 },
+    { name: 'Sacramento Valley',  color: '#27ae60', latMin: 37.5, latMax: 40.5, lonMin: -122.5, lonMax: -120.5 },
+    { name: 'Sierra Nevada',      color: '#8e44ad', latMin: 36.5, latMax: 40.5, lonMin: -120.5, lonMax: -118.5 },
+    { name: 'Bay Area',           color: '#16a085', latMin: 36.5, latMax: 38.5, lonMin: -122.5, lonMax: -121.0 },
+    { name: 'Central Valley',     color: '#d35400', latMin: 34.5, latMax: 37.5, lonMin: -121.5, lonMax: -119.0 },
+    { name: 'Central Coast',      color: '#f39c12', latMin: 33.5, latMax: 36.5, lonMin: -122.0, lonMax: -120.0 },
+    { name: 'Inland Empire',      color: '#c0392b', latMin: 33.0, latMax: 35.5, lonMin: -118.0, lonMax: -115.5 },
+    { name: 'Mojave / Desert',    color: '#795548', latMin: 34.0, latMax: 37.5, lonMin: -117.5, lonMax: -114.0 },
+    { name: 'South Coast',        color: '#e91e63', latMin: 32.5, latMax: 34.5, lonMin: -119.0, lonMax: -116.5 },
   ];
-  // selectedCells: Map<cellKey, { cell, color, idx }>
-  const selectedCells = new Map();
-  let paletteIdx = 0;
-  function cellKey(d) { return d.lat.toFixed(2) + ',' + d.lon.toFixed(2); }
+
+  function cellRegion(d) {
+    for (const r of CA_REGIONS) {
+      if (d.lat >= r.latMin && d.lat <= r.latMax && d.lon >= r.lonMin && d.lon <= r.lonMax) return r;
+    }
+    return null;
+  }
+
+  /* Average a set of cells' values for a given mode+year index */
+  function regionAvgSeries(cells) {
+    return YEARS.map((yr, i) => {
+      const vals = cells.map(c => getVal(c, mode, i)).filter(v => v !== null);
+      return vals.length ? d3.mean(vals) : null;
+    });
+  }
+
+  /* ── Selected-regions state ─────────────────────────────────────── */
+  // selectedRegions: Map<regionName, { region, cells }>  — cells populated after gridData loads
+  const selectedRegions = new Map();
+
+  /* Build region→cells lookup once (called after buildMap has gridData) */
+  function buildRegionCells() {
+    CA_REGIONS.forEach(r => { r.cells = gridData.cells.filter(c => cellRegion(c) === r); });
+  }
+  buildRegionCells();
 
   /* ── Fixed Y-axis domains per mode ──────────────────────────────── */
   const MODE_YDOMAIN = {
@@ -159,117 +187,120 @@ function buildMap(caFeature) {
   const sidePanel = document.getElementById('hovered-panel');
   sidePanel.style.cssText = 'padding:0;';
 
-  const SP_W = 310, SP_H = 260;
-  const SP_M = { top: 14, right: 0, bottom: 24, left: 50 };
+  const SP_W = 210, SP_H = 160;
+  const SP_M = { top: 14, right: 10, bottom: 24, left: 34 };
   const SP_IW = SP_W - SP_M.left - SP_M.right;
   const SP_IH = SP_H - SP_M.top  - SP_M.bottom;
 
-  // Inject chart container
   sidePanel.innerHTML =
     '<div id="sp-title" style="font-size:11px;font-weight:700;color:#333;padding:6px 8px 2px;"></div>' +
     '<svg id="sp-svg" width="' + SP_W + '" height="' + SP_H + '" style="display:block;overflow:visible;"></svg>' +
-    '<div id="sp-legend" style="padding:4px 8px 6px;font-size:9px;line-height:1.6;"></div>' +
+    '<div id="sp-legend" style="padding:4px 8px 6px;font-size:9px;line-height:1.7;"></div>' +
     '<div id="sp-hint" style="padding:0 8px 6px;font-size:9px;color:#aaa;">Click a region to pin it. Click again to remove.</div>';
 
   const spSvg = d3.select('#sp-svg');
   const spG   = spSvg.append('g').attr('transform', 'translate(' + SP_M.left + ',' + SP_M.top + ')');
 
-  // Axes groups (redrawn on mode change)
   const spXAxisG = spG.append('g').attr('transform', 'translate(0,' + SP_IH + ')');
   const spYAxisG = spG.append('g');
-  const spGridG  = spG.append('g').attr('class', 'sp-grid');
-  const spYearG  = spG.append('line').attr('class', 'sp-yearline')
+  const spGridG  = spG.append('g');
+  const spYearG  = spG.append('line')
     .attr('y1', 0).attr('y2', SP_IH)
     .attr('stroke', '#555').attr('stroke-width', 1).attr('stroke-dasharray', '3,2').attr('opacity', 0);
-  const spLinesG = spG.append('g'); // pinned lines
-  const spHoverG = spG.append('g'); // hover preview line (on top)
+  const spLinesG = spG.append('g');
+  const spHoverG = spG.append('g');
 
   const xSp = d3.scaleLinear().domain([YEARS[0], YEARS[YEARS.length - 1]]).range([0, SP_IW]);
-  let ySp    = d3.scaleLinear().domain(MODE_YDOMAIN[mode]).range([SP_IH, 0]);
+  let ySp = d3.scaleLinear().domain(MODE_YDOMAIN[mode]).range([SP_IH, 0]);
 
   function buildSpAxes() {
     ySp = d3.scaleLinear().domain(MODE_YDOMAIN[mode]).range([SP_IH, 0]);
-
-    spXAxisG.call(
-      d3.axisBottom(xSp).ticks(7).tickFormat(d3.format('d'))
-    ).call(g => g.select('.domain').attr('stroke','#ccc'))
-     .call(g => g.selectAll('line').attr('stroke','#ccc'))
-     .call(g => g.selectAll('text').attr('fill','#999').style('font-size','8px'));
-
-    spYAxisG.call(
-      d3.axisLeft(ySp).ticks(5).tickFormat(d => d + '°')
-    ).call(g => g.select('.domain').attr('stroke','#ccc'))
-     .call(g => g.selectAll('line').attr('stroke','#ccc'))
-     .call(g => g.selectAll('text').attr('fill','#999').style('font-size','8px'));
-
-    // Horizontal grid lines
+    spXAxisG.call(d3.axisBottom(xSp).ticks(7).tickFormat(d3.format('d')))
+      .call(g => g.select('.domain').attr('stroke','#ccc'))
+      .call(g => g.selectAll('line').attr('stroke','#ccc'))
+      .call(g => g.selectAll('text').attr('fill','#999').style('font-size','8px'));
+    spYAxisG.call(d3.axisLeft(ySp).ticks(5).tickFormat(d => d + '°'))
+      .call(g => g.select('.domain').attr('stroke','#ccc'))
+      .call(g => g.selectAll('line').attr('stroke','#ccc'))
+      .call(g => g.selectAll('text').attr('fill','#999').style('font-size','8px'));
     const yDom = MODE_YDOMAIN[mode];
     const step = (yDom[1] - yDom[0]) / 5;
-    const gridVals = d3.range(yDom[0], yDom[1] + step * 0.1, step);
     spGridG.selectAll('line').remove();
-    spGridG.selectAll('line').data(gridVals).join('line')
+    spGridG.selectAll('line')
+      .data(d3.range(yDom[0], yDom[1] + step * 0.1, step))
+      .join('line')
       .attr('x1', 0).attr('x2', SP_IW)
       .attr('y1', t => ySp(t)).attr('y2', t => ySp(t))
       .attr('stroke', '#f0f0f0').attr('stroke-width', 0.8);
-
     document.getElementById('sp-title').textContent = SCALES[mode].title + '  ·  1950–2019';
   }
   buildSpAxes();
 
-  /* Build polyline path string for a cell */
-  function spPathD(cell) {
+  /* Build path for a region's averaged series */
+  function regionPathD(regionName) {
+    const reg = CA_REGIONS.find(r => r.name === regionName);
+    if (!reg || !reg.cells || reg.cells.length === 0) return '';
     const lineGen = d3.line()
       .x((v, i) => xSp(YEARS[i]))
       .y(v => ySp(v))
       .defined(v => v !== null)
       .curve(d3.curveCatmullRom.alpha(0.5));
-    return lineGen(YEARS.map((yr, i) => getVal(cell, mode, i)));
+    return lineGen(regionAvgSeries(reg.cells));
   }
 
-  /* Redraw all pinned lines (called on mode change or select/deselect) */
+  /* Preview path for a hovered region (used before selecting) */
+  function hoverRegionPathD(reg) {
+    if (!reg || !reg.cells || reg.cells.length === 0) return '';
+    const lineGen = d3.line()
+      .x((v, i) => xSp(YEARS[i]))
+      .y(v => ySp(v))
+      .defined(v => v !== null)
+      .curve(d3.curveCatmullRom.alpha(0.5));
+    return lineGen(regionAvgSeries(reg.cells));
+  }
+
+  /* Redraw all pinned region lines */
   function redrawPinnedLines() {
     buildSpAxes();
     spLinesG.selectAll('*').remove();
-    selectedCells.forEach(({ cell, color }, key) => {
+    selectedRegions.forEach(({ region }) => {
       spLinesG.append('path')
-        .attr('d', spPathD(cell))
+        .attr('d', regionPathD(region.name))
         .attr('fill', 'none')
-        .attr('stroke', color)
+        .attr('stroke', region.color)
         .attr('stroke-width', 2)
-        .attr('opacity', 0.85);
+        .attr('opacity', 0.9);
     });
     updateYearLine();
     updateLegend();
   }
 
-  /* Year marker line + dots */
+  /* Year marker + dots on pinned region lines */
   function updateYearLine() {
     const cx = xSp(YEARS[di]);
     spYearG.attr('x1', cx).attr('x2', cx)
-      .attr('opacity', selectedCells.size > 0 ? 0.7 : 0);
-    // dots on pinned lines
+      .attr('opacity', selectedRegions.size > 0 ? 0.7 : 0);
     spLinesG.selectAll('circle.year-dot').remove();
-    selectedCells.forEach(({ cell, color }) => {
-      const v = getVal(cell, mode, di);
+    selectedRegions.forEach(({ region }) => {
+      const vals = regionAvgSeries(region.cells);
+      const v = vals[di];
       if (v === null) return;
       spLinesG.append('circle').attr('class', 'year-dot')
         .attr('cx', xSp(YEARS[di])).attr('cy', ySp(v))
-        .attr('r', 3.5).attr('fill', color).attr('stroke', '#fff').attr('stroke-width', 1.2);
+        .attr('r', 3.5).attr('fill', region.color)
+        .attr('stroke', '#fff').attr('stroke-width', 1.2);
     });
   }
 
-  /* Legend below chart */
+  /* Legend */
   function updateLegend() {
     const leg = document.getElementById('sp-legend');
-    if (selectedCells.size === 0) {
-      leg.innerHTML = '';
-      return;
-    }
-    leg.innerHTML = Array.from(selectedCells.values()).map(({ cell, color }) =>
-      '<span style="display:inline-flex;align-items:center;margin-right:8px;">' +
-      '<span style="display:inline-block;width:14px;height:3px;background:' + color + ';margin-right:3px;border-radius:2px;"></span>' +
-      '<span style="color:#555;">' + Math.abs(cell.lat).toFixed(1) + '°N ' + Math.abs(cell.lon).toFixed(1) + '°W</span>' +
-      '</span>'
+    if (selectedRegions.size === 0) { leg.innerHTML = ''; return; }
+    leg.innerHTML = Array.from(selectedRegions.values()).map(({ region }) =>
+      '<div style="display:flex;align-items:center;gap:5px;">' +
+      '<span style="display:inline-block;width:16px;height:3px;background:' + region.color + ';border-radius:2px;flex-shrink:0;"></span>' +
+      '<span style="color:#444;">' + region.name + '</span>' +
+      '</div>'
     ).join('');
   }
 
@@ -285,23 +316,22 @@ function buildMap(caFeature) {
       .attr('fill',   d => colorOf(getVal(d, mode, di), mode))
       .attr('cursor', 'pointer')
 
-      /* ── HOVER: float tooltip only ── */
+      /* ── HOVER: float tooltip + region preview line ── */
       .on('mousemove', function(event, d) {
+        const reg = cellRegion(d);
         const hot   = d.hot[di]  !== null ? d.hot[di].toFixed(1)  + '°C' : 'N/A';
         const cold  = d.cold[di] !== null ? d.cold[di].toFixed(1) + '°C' : 'N/A';
         const range = (d.hot[di] !== null && d.cold[di] !== null)
           ? (d.hot[di] - d.cold[di]).toFixed(1) + '°C' : 'N/A';
-
-        floatLabel.innerHTML =
-          `<strong style="display:block;margin-bottom:2px;">${Math.abs(d.lat).toFixed(2)}°N, ${Math.abs(d.lon).toFixed(2)}°W</strong>
-           <span style="color:#8B0000;">Max high: ${hot}</span><br>
-           <span style="color:#003080;">Min low:  ${cold}</span><br>
-           <span style="color:#5a0060;">Range:    ${range}</span>`;
-
         const v = getVal(d, mode, di);
         const vStr = v !== null ? v.toFixed(1) + '°C' : 'N/A';
-        floatLabel.innerHTML +=
-          `<hr style="margin:4px 0;border:none;border-top:1px solid #eee;">
+
+        floatLabel.innerHTML =
+          `<strong style="display:block;margin-bottom:2px;">${reg ? reg.name : (Math.abs(d.lat).toFixed(2) + '°N, ' + Math.abs(d.lon).toFixed(2) + '°W')}</strong>
+           <span style="color:#8B0000;">Max high: ${hot}</span><br>
+           <span style="color:#003080;">Min low:  ${cold}</span><br>
+           <span style="color:#5a0060;">Range:    ${range}</span>
+           <hr style="margin:4px 0;border:none;border-top:1px solid #eee;">
            <strong>${SCALES[mode].title}: ${vStr}</strong>`;
 
         const rect = mapWrap.getBoundingClientRect();
@@ -312,59 +342,69 @@ function buildMap(caFeature) {
         floatLabel.style.left = lx + 'px';
         floatLabel.style.top  = ly + 'px';
 
-        // Preview hover line on chart (light dashed, not pinned)
+        // Region preview on chart
         spHoverG.selectAll('*').remove();
-        if (v !== null && !selectedCells.has(cellKey(d))) {
+        if (reg && !selectedRegions.has(reg.name)) {
+          const hpath = hoverRegionPathD(reg);
           spHoverG.append('path')
-            .attr('d', spPathD(d))
+            .attr('d', hpath)
             .attr('fill', 'none')
-            .attr('stroke', '#999')
+            .attr('stroke', reg.color)
             .attr('stroke-width', 1.5)
-            .attr('stroke-dasharray', '4,3')
-            .attr('opacity', 0.7);
-          // dot at current year
-          spHoverG.append('circle')
-            .attr('cx', xSp(YEARS[di])).attr('cy', ySp(v))
-            .attr('r', 3).attr('fill', '#999').attr('stroke', '#fff').attr('stroke-width', 1);
+            .attr('stroke-dasharray', '5,3')
+            .attr('opacity', 0.6);
+          const avgVals = regionAvgSeries(reg.cells);
+          const av = avgVals[di];
+          if (av !== null) {
+            spHoverG.append('circle')
+              .attr('cx', xSp(YEARS[di])).attr('cy', ySp(av))
+              .attr('r', 3).attr('fill', reg.color).attr('stroke', '#fff').attr('stroke-width', 1);
+          }
+          // region name hint
+          document.getElementById('sp-hint').textContent = reg.name + ' — click to pin';
+        } else if (reg) {
+          document.getElementById('sp-hint').textContent = reg.name + ' — click to remove';
         }
       })
       .on('mouseleave', function() {
         floatLabel.style.display = 'none';
         spHoverG.selectAll('*').remove();
+        document.getElementById('sp-hint').textContent = 'Click a region to pin it. Click again to remove.';
       })
 
-      /* ── CLICK: pin / unpin ── */
+      /* ── CLICK: pin / unpin region ── */
       .on('click', function(event, d) {
-        const key = cellKey(d);
-        if (selectedCells.has(key)) {
-          selectedCells.delete(key);
+        const reg = cellRegion(d);
+        if (!reg) return;
+        if (selectedRegions.has(reg.name)) {
+          selectedRegions.delete(reg.name);
         } else {
-          const color = PALETTE[paletteIdx % PALETTE.length];
-          paletteIdx++;
-          selectedCells.set(key, { cell: d, color });
+          selectedRegions.set(reg.name, { region: reg });
         }
         redrawOutlines();
         redrawPinnedLines();
       });
 
   /* ── Outline overlay group (above cells, below CA border) ── */
-  const outlineGroup = svg.append('g');
+  const outlineGroup = svg.append('g').attr('pointer-events', 'none');
 
   function redrawOutlines() {
     outlineGroup.selectAll('rect.sel-outline').remove();
-    selectedCells.forEach(({ cell, color }) => {
-      const [px] = proj([cell.lon, cell.lat]);
-      const [, py] = proj([cell.lon, cell.lat]);
-      outlineGroup.append('rect')
-        .attr('class', 'sel-outline')
-        .attr('x', px - cellW / 2 - 1)
-        .attr('y', py - cellH / 2 - 1)
-        .attr('width',  cellW + 2)
-        .attr('height', cellH + 2)
-        .attr('fill', 'none')
-        .attr('stroke', color)
-        .attr('stroke-width', 2.5)
-        .attr('pointer-events', 'none');
+    selectedRegions.forEach(({ region }) => {
+      region.cells.forEach(cell => {
+        const [px] = proj([cell.lon, cell.lat]);
+        const [, py] = proj([cell.lon, cell.lat]);
+        outlineGroup.append('rect')
+          .attr('class', 'sel-outline')
+          .attr('x', px - cellW / 2)
+          .attr('y', py - cellH / 2)
+          .attr('width',  cellW)
+          .attr('height', cellH)
+          .attr('fill', region.color)
+          .attr('fill-opacity', 0.18)
+          .attr('stroke', region.color)
+          .attr('stroke-width', 1.5);
+      });
     });
   }
 
