@@ -52,7 +52,7 @@ function getVal(county, m, i) {
 }
 
 function colorOf(v, m) {
-  if (v === null) return '#ccc';
+  if (v === null) return 'rgba(190,235,255,0.22)';
   return SCALES[m].fn(v);
 }
 
@@ -83,7 +83,7 @@ function render() {
       const d = d3.select(this).datum();
       const name = d.properties.name;
       const cd = countyData.counties[name];
-      if (!cd) return '#ccc';
+      if (!cd) return 'rgba(190,235,255,0.42)';
       return colorOf(getVal(cd, mode, di), mode);
     });
 
@@ -109,16 +109,16 @@ function buildMap(countiesGeoJSON) {
   const sidePanel = document.getElementById('hovered-panel');
   sidePanel.style.cssText = 'padding:0;';
 
-  const SP_W = 210, SP_H = 160;
-  const SP_M = { top: 14, right: 10, bottom: 24, left: 34 };
+  const SP_W = 220, SP_H = 145;
+  const SP_M = { top: 10, right: 8, bottom: 22, left: 32 };
   const SP_IW = SP_W - SP_M.left - SP_M.right;
   const SP_IH = SP_H - SP_M.top  - SP_M.bottom;
 
   sidePanel.innerHTML =
-    '<div id="sp-title" style="font-size:11px;font-weight:700;color:#333;padding:6px 8px 2px;"></div>' +
-    '<svg id="sp-svg" width="' + SP_W + '" height="' + SP_H + '" style="display:block;overflow:visible;"></svg>' +
+    '<div id="sp-title" style="font-size:11px;font-weight:700;color:#eaf8ff;padding:6px 8px 2px;"></div>' +
+    '<svg id="sp-svg" width="' + SP_W + '" height="' + SP_H + '" viewBox="0 0 ' + SP_W + ' ' + SP_H + '" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible;width:100%;height:auto;"></svg>' +
     '<div id="sp-legend" style="padding:4px 8px 6px;font-size:9px;line-height:1.7;"></div>' +
-    '<div id="sp-hint" style="padding:0 8px 6px;font-size:9px;color:#aaa;">Click a county to pin it. Click again to remove.</div>';
+    '<div id="sp-hint" style="padding:0 8px 6px;font-size:9px;color:#89a6b7;">Click a county to pin it. Click again to remove.</div>';
 
   const spSvg = d3.select('#sp-svg');
   const spG   = spSvg.append('g').attr('transform', 'translate(' + SP_M.left + ',' + SP_M.top + ')');
@@ -128,7 +128,7 @@ function buildMap(countiesGeoJSON) {
   const spGridG  = spG.append('g');
   const spYearG  = spG.append('line')
     .attr('y1', 0).attr('y2', SP_IH)
-    .attr('stroke', '#555').attr('stroke-width', 1).attr('stroke-dasharray', '3,2').attr('opacity', 0);
+    .attr('stroke', 'rgba(234,248,255,0.72)').attr('stroke-width', 1).attr('stroke-dasharray', '3,2').attr('opacity', 0);
   const spLinesG = spG.append('g');
   const spHoverG = spG.append('g');
 
@@ -154,13 +154,13 @@ function buildMap(countiesGeoJSON) {
   function buildSpAxes() {
     ySp = d3.scaleLinear().domain(MODE_YDOMAIN[mode]).range([SP_IH, 0]);
     spXAxisG.call(d3.axisBottom(xSp).ticks(7).tickFormat(d3.format('d')))
-      .call(g => g.select('.domain').attr('stroke','#ccc'))
-      .call(g => g.selectAll('line').attr('stroke','#ccc'))
-      .call(g => g.selectAll('text').attr('fill','#999').style('font-size','8px'));
+      .call(g => g.select('.domain').attr('stroke','rgba(190,235,255,0.42)'))
+      .call(g => g.selectAll('line').attr('stroke','rgba(190,235,255,0.42)'))
+      .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.72)').style('font-size','10px'));
     spYAxisG.call(d3.axisLeft(ySp).ticks(5).tickFormat(d => d + '°'))
-      .call(g => g.select('.domain').attr('stroke','#ccc'))
-      .call(g => g.selectAll('line').attr('stroke','#ccc'))
-      .call(g => g.selectAll('text').attr('fill','#999').style('font-size','8px'));
+      .call(g => g.select('.domain').attr('stroke','rgba(190,235,255,0.42)'))
+      .call(g => g.selectAll('line').attr('stroke','rgba(190,235,255,0.42)'))
+      .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.72)').style('font-size','10px'));
     const yDom = MODE_YDOMAIN[mode];
     const step = (yDom[1] - yDom[0]) / 5;
     spGridG.selectAll('line').remove();
@@ -169,7 +169,7 @@ function buildMap(countiesGeoJSON) {
       .join('line')
       .attr('x1', 0).attr('x2', SP_IW)
       .attr('y1', t => ySp(t)).attr('y2', t => ySp(t))
-      .attr('stroke', '#f0f0f0').attr('stroke-width', 0.8);
+      .attr('stroke', 'rgba(190,235,255,0.10)').attr('stroke-width', 0.8);
     document.getElementById('sp-title').textContent = SCALES[mode].title + '  ·  1950–2019';
   }
   buildSpAxes();
@@ -229,7 +229,7 @@ function buildMap(countiesGeoJSON) {
     leg.innerHTML = Array.from(selectedCounties.entries()).map(([name, color]) =>
       '<div style="display:flex;align-items:center;gap:5px;">' +
       '<span style="display:inline-block;width:16px;height:3px;background:' + color + ';border-radius:2px;flex-shrink:0;"></span>' +
-      '<span style="color:#444;">' + name + '</span>' +
+      '<span style="color:#dceff8;">' + name + '</span>' +
       '</div>'
     ).join('');
   }
@@ -244,7 +244,7 @@ function buildMap(countiesGeoJSON) {
       .attr('fill', d => {
         const name = d.properties.name;
         const cd = countyData.counties[name];
-        if (!cd) return '#ccc';
+        if (!cd) return 'rgba(190,235,255,0.42)';
         return colorOf(getVal(cd, mode, di), mode);
       })
       .attr('stroke', 'rgba(255,255,255,0.5)')
@@ -262,13 +262,14 @@ function buildMap(countiesGeoJSON) {
           ? (cd.hot[di] - cd.cold[di]).toFixed(1) + '°C' : 'N/A';
         const v = getVal(cd, mode, di);
         const vStr = v !== null ? v.toFixed(1) + '°C' : 'N/A';
+        if (window.updateMapScanner) window.updateMapScanner(name, hot, cold, range, vStr);
 
         floatLabel.innerHTML =
           `<strong style="display:block;margin-bottom:2px;">${name} County</strong>
-           <span style="color:#8B0000;">Max high: ${hot}</span><br>
-           <span style="color:#003080;">Min low:  ${cold}</span><br>
-           <span style="color:#5a0060;">Range:    ${range}</span>
-           <hr style="margin:4px 0;border:none;border-top:1px solid #eee;">
+           <span style="color:#ffb08a;">Max high: ${hot}</span><br>
+           <span style="color:#95d4ff;">Min low:  ${cold}</span><br>
+           <span style="color:#dfb7ff;">Range:    ${range}</span>
+           <hr style="margin:4px 0;border:none;border-top:1px solid rgba(190,235,255,0.16);">
            <strong>${SCALES[mode].title}: ${vStr}</strong>`;
 
         const rect = mapWrap.getBoundingClientRect();
@@ -279,7 +280,7 @@ function buildMap(countiesGeoJSON) {
         floatLabel.style.left = lx + 'px';
         floatLabel.style.top  = ly + 'px';
 
-        d3.select(this).attr('stroke', '#333').attr('stroke-width', 1.5);
+        d3.select(this).attr('stroke', '#ffffff').attr('stroke-width', 1.5);
 
         spHoverG.selectAll('*').remove();
         if (!selectedCounties.has(name)) {
@@ -292,7 +293,7 @@ function buildMap(countiesGeoJSON) {
           spHoverG.append('path')
             .attr('d', lineGen(vals))
             .attr('fill', 'none')
-            .attr('stroke', '#999')
+            .attr('stroke', 'rgba(212,232,242,0.72)')
             .attr('stroke-width', 1.5)
             .attr('stroke-dasharray', '5,3')
             .attr('opacity', 0.7);
@@ -300,7 +301,7 @@ function buildMap(countiesGeoJSON) {
           if (v2 !== null) {
             spHoverG.append('circle')
               .attr('cx', xSp(YEARS[di])).attr('cy', ySp(v2))
-              .attr('r', 3).attr('fill', '#999').attr('stroke', '#fff').attr('stroke-width', 1);
+              .attr('r', 3).attr('fill', 'rgba(212,232,242,0.72)').attr('stroke', '#fff').attr('stroke-width', 1);
           }
           document.getElementById('sp-hint').textContent = name + ' County — click to pin';
         } else {
@@ -309,6 +310,7 @@ function buildMap(countiesGeoJSON) {
       })
       .on('mouseleave', function(event, d) {
         floatLabel.style.display = 'none';
+        if (window.resetMapScanner) window.resetMapScanner();
         spHoverG.selectAll('*').remove();
         document.getElementById('sp-hint').textContent = 'Click a county to pin it. Click again to remove.';
         const name = d.properties.name;
@@ -352,6 +354,7 @@ function setMode(m) {
   });
   render();
   if (window._spRedraw) window._spRedraw();
+  if (window.updateCityCompare) window.updateCityCompare();
 }
 
 function setYear(v) {
@@ -359,6 +362,7 @@ function setYear(v) {
   document.getElementById('dec-lbl').textContent = YEARS[di];
   render();
   if (window._spUpdateYear) window._spUpdateYear();
+  if (window.updateCityCompare) window.updateCityCompare();
 }
 
 Promise.all([
@@ -431,14 +435,14 @@ const COLORS = {
   g.append('text')
     .attr('x', W / 2).attr('y', H + 38)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '12px').attr('fill', '#888780')
+    .attr('font-size', '12px').attr('fill', '#9bb6c5')
     .text('Year');
 
   g.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('x', -H / 2).attr('y', -42)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '12px').attr('fill', '#888780')
+    .attr('font-size', '12px').attr('fill', '#9bb6c5')
     .text('Temperature (°C)');
 
   g.append('line')
@@ -452,7 +456,7 @@ const COLORS = {
     .text('projections →');
 
   const hoverLine = g.append('line')
-    .attr('stroke', '#b4b2a9')
+    .attr('stroke', 'rgba(190,235,255,0.40)')
     .attr('stroke-width', 1)
     .attr('y1', 0).attr('y2', H)
     .attr('opacity', 0)
@@ -612,31 +616,31 @@ const COLORS = {
 
   hSvg.append('g').attr('transform', `translate(0,${hH})`)
     .call(d3.axisBottom(xH).ticks(12).tickFormat(d3.format('d')))
-    .call(g => g.select('.domain').attr('stroke','#ddd'))
+    .call(g => g.select('.domain').attr('stroke','rgba(190,235,255,0.32)'))
     .call(g => g.selectAll('line').remove())
-    .call(g => g.selectAll('text').attr('fill','#bbb').style('font-size','10px'));
+    .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.70)').style('font-size','10px'));
 
   hSvg.append('g')
     .call(d3.axisLeft(yH).ticks(5).tickFormat(d => Math.round(d * 100) + '%'))
     .call(g => g.select('.domain').remove())
-    .call(g => g.selectAll('line').attr('stroke','#f0f0f0').attr('x2',hW))
-    .call(g => g.selectAll('text').attr('fill','#bbb').style('font-size','10px'));
+    .call(g => g.selectAll('line').attr('stroke','rgba(190,235,255,0.10)').attr('x2',hW))
+    .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.70)').style('font-size','10px'));
 
   const coastlineGen = d3.line().x((d, i) => xH(years[i])).y(d => yH(d)).curve(d3.curveBasis);
   const sstNorm = sstVals.map(v => norm(v, sstVals));
   const slhNorm = slhVals.map(v => norm(v, slhVals));
   const prNorm = precVals.map(v => norm(v, precVals));
 
-  hSvg.append('path').datum(sstNorm).attr('fill','none').attr('stroke','#1a5276').attr('stroke-width',2).attr('d',coastlineGen);
-  hSvg.append('path').datum(slhNorm).attr('fill','none').attr('stroke','#1a8cad').attr('stroke-width',1.6).attr('opacity',0.85).attr('d',coastlineGen);
-  hSvg.append('path').datum(prNorm).attr('fill','none').attr('stroke','#2e7d32').attr('stroke-width',1.6).attr('opacity',0.85).attr('d',coastlineGen);
-  hSvg.append('line').attr('x1',0).attr('x2',hW).attr('y1',yH(0.5)).attr('y2',yH(0.5)).attr('stroke','#ccc').attr('stroke-dasharray','4,3');
+  hSvg.append('path').datum(sstNorm).attr('fill','none').attr('stroke','#57c8ff').attr('stroke-width',2).attr('d',coastlineGen);
+  hSvg.append('path').datum(slhNorm).attr('fill','none').attr('stroke','#56f1d4').attr('stroke-width',1.6).attr('opacity',0.85).attr('d',coastlineGen);
+  hSvg.append('path').datum(prNorm).attr('fill','none').attr('stroke','#9ee493').attr('stroke-width',1.6).attr('opacity',0.85).attr('d',coastlineGen);
+  hSvg.append('line').attr('x1',0).attr('x2',hW).attr('y1',yH(0.5)).attr('y2',yH(0.5)).attr('stroke','rgba(190,235,255,0.42)').attr('stroke-dasharray','4,3');
 
-  const selLine = hSvg.append('line').attr('y1',0).attr('y2',hH).attr('stroke','#333').attr('stroke-width',1.5).attr('stroke-dasharray','3,2');
+  const selLine = hSvg.append('line').attr('y1',0).attr('y2',hH).attr('stroke','#ffffff').attr('stroke-width',1.5).attr('stroke-dasharray','3,2');
   const dots = {
-    sst: hSvg.append('circle').attr('r',5).attr('fill','#fff').attr('stroke','#1a5276').attr('stroke-width',2),
-    slh: hSvg.append('circle').attr('r',4).attr('fill','#fff').attr('stroke','#1a8cad').attr('stroke-width',2),
-    pr: hSvg.append('circle').attr('r',4).attr('fill','#fff').attr('stroke','#2e7d32').attr('stroke-width',2)
+    sst: hSvg.append('circle').attr('r',5).attr('fill','#fff').attr('stroke','#57c8ff').attr('stroke-width',2),
+    slh: hSvg.append('circle').attr('r',4).attr('fill','#fff').attr('stroke','#56f1d4').attr('stroke-width',2),
+    pr: hSvg.append('circle').attr('r',4).attr('fill','#fff').attr('stroke','#9ee493').attr('stroke-width',2)
   };
   const selLabel = hSvg.append('text').attr('text-anchor','middle').attr('fill','#444').style('font-size','10px').style('font-weight','600');
 
@@ -677,3 +681,153 @@ const COLORS = {
 
   document.getElementById('yearSlider').addEventListener('input', e => update(+e.target.value));
   update(1997);
+
+/* ---- Added interactive features: progress, autoplay, scanner, comparison, particles, reveal ---- */
+(function() {
+  const root = document.documentElement;
+
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+
+  const progressFill = document.getElementById('scroll-progress-fill');
+  const progressStops = Array.from(document.querySelectorAll('.progress-stops a'));
+  const progressSections = progressStops
+    .map(a => ({ link: a, el: document.getElementById(a.dataset.section) || document.querySelector(a.getAttribute('href')) }))
+    .filter(d => d.el);
+
+  function updateScrollProgress() {
+    const doc = document.documentElement;
+    const max = Math.max(1, doc.scrollHeight - window.innerHeight);
+    const pct = clamp((window.scrollY / max) * 100, 0, 100);
+    if (progressFill) progressFill.style.width = pct + '%';
+
+    let active = progressSections[0];
+    const marker = window.scrollY + window.innerHeight * 0.42;
+    progressSections.forEach(item => {
+      if (item.el.offsetTop <= marker) active = item;
+    });
+    progressStops.forEach(a => a.classList.toggle('active', active && a === active.link));
+  }
+  window.addEventListener('scroll', updateScrollProgress, { passive: true });
+  window.addEventListener('resize', updateScrollProgress);
+  updateScrollProgress();
+
+  const playBtn = document.getElementById('play-years');
+  const yearSlider = document.getElementById('dec-sl');
+  let playTimer = null;
+  function stopTimeline() {
+    if (playTimer) clearInterval(playTimer);
+    playTimer = null;
+    if (playBtn) {
+      playBtn.classList.remove('playing');
+      playBtn.textContent = '▶ Play';
+    }
+  }
+  function startTimeline() {
+    if (!yearSlider || typeof setYear !== 'function') return;
+    if (playBtn) {
+      playBtn.classList.add('playing');
+      playBtn.textContent = 'Ⅱ Pause';
+    }
+    playTimer = setInterval(() => {
+      const max = +yearSlider.max;
+      let next = +yearSlider.value + 1;
+      if (next > max) next = +yearSlider.min;
+      yearSlider.value = String(next);
+      setYear(next);
+    }, 420);
+  }
+  if (playBtn) {
+    playBtn.addEventListener('click', () => playTimer ? stopTimeline() : startTimeline());
+    if (yearSlider) yearSlider.addEventListener('input', stopTimeline);
+  }
+
+  window.updateMapScanner = function(name, hot, cold, range, selected) {
+    const scanName = document.getElementById('scan-name');
+    const scanHot = document.getElementById('scan-hot');
+    const scanCold = document.getElementById('scan-cold');
+    const scanRange = document.getElementById('scan-range');
+    const scanNote = document.getElementById('scan-note');
+    if (!scanName) return;
+    scanName.textContent = name + ' County';
+    scanHot.textContent = hot;
+    scanCold.textContent = cold;
+    scanRange.textContent = range;
+    if (scanNote) scanNote.textContent = SCALES[mode].title + ' in ' + YEARS[di] + ': ' + selected + '. Click the county to pin its trend.';
+  };
+
+  window.resetMapScanner = function() {
+    const scanName = document.getElementById('scan-name');
+    const scanHot = document.getElementById('scan-hot');
+    const scanCold = document.getElementById('scan-cold');
+    const scanRange = document.getElementById('scan-range');
+    const scanNote = document.getElementById('scan-note');
+    if (!scanName) return;
+    scanName.textContent = 'Move over California';
+    scanHot.textContent = '—';
+    scanCold.textContent = '—';
+    scanRange.textContent = '—';
+    if (scanNote) scanNote.textContent = 'Hover a county to turn the map into a small climate scanner.';
+  };
+
+  const reveal = document.getElementById('reveal-card');
+  if (reveal && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) reveal.classList.add('is-visible');
+      });
+    }, { threshold: 0.35 });
+    io.observe(reveal);
+  } else if (reveal) {
+    reveal.classList.add('is-visible');
+  }
+
+  const canvas = document.getElementById('ocean-particles');
+  if (canvas && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const ctx = canvas.getContext('2d');
+    let w = 0, h = 0, particles = [];
+    function resizeParticles() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = canvas.width = Math.floor(window.innerWidth * dpr);
+      h = canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const count = Math.min(90, Math.max(38, Math.floor(window.innerWidth / 18)));
+      particles = Array.from({ length: count }, (_, i) => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        r: 0.6 + Math.random() * 1.8,
+        vx: 0.18 + Math.random() * 0.45,
+        vy: -0.06 + Math.random() * 0.12,
+        phase: Math.random() * Math.PI * 2
+      }));
+    }
+    function drawParticles(t) {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy + Math.sin(t * 0.001 + p.phase) * 0.12;
+        if (p.x > window.innerWidth + 20) p.x = -20;
+        if (p.y < -20) p.y = window.innerHeight + 20;
+        if (p.y > window.innerHeight + 20) p.y = -20;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = i % 5 === 0 ? 'rgba(255,209,102,0.32)' : 'rgba(86,241,212,0.22)';
+        ctx.fill();
+        if (i % 3 === 0) {
+          ctx.beginPath();
+          ctx.moveTo(p.x - 26, p.y + 8);
+          ctx.lineTo(p.x + 30, p.y - 9);
+          ctx.strokeStyle = 'rgba(87,200,255,0.10)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      });
+      requestAnimationFrame(drawParticles);
+    }
+    resizeParticles();
+    window.addEventListener('resize', resizeParticles);
+    requestAnimationFrame(drawParticles);
+  }
+})();
