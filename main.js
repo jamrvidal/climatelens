@@ -1,3 +1,101 @@
+// Early interaction fallback: keep map Play and bottom navigation working even if later chart code fails.
+(() => {
+  function bindClimateInteractions() {
+    const playBtn = document.getElementById('play-years');
+    const yearSlider = document.getElementById('dec-sl');
+
+    if (playBtn && yearSlider && !playBtn.dataset.earlyBound) {
+      playBtn.dataset.earlyBound = 'true';
+      let timer = null;
+
+      const stop = () => {
+        if (timer) clearInterval(timer);
+        timer = null;
+        playBtn.classList.remove('playing');
+        playBtn.textContent = '▶ Play';
+      };
+
+      const start = () => {
+        if (timer) return;
+        playBtn.classList.add('playing');
+        playBtn.textContent = 'Ⅱ Pause';
+        timer = setInterval(() => {
+          const max = Number(yearSlider.max);
+          const min = Number(yearSlider.min);
+          let next = Number(yearSlider.value) + 1;
+          if (next > max) next = min;
+          yearSlider.value = String(next);
+          if (typeof window.setYear === 'function') {
+            window.setYear(next);
+          } else if (typeof setYear === 'function') {
+            setYear(next);
+          }
+        }, 520);
+      };
+
+      playBtn.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        timer ? stop() : start();
+      }, true);
+
+      yearSlider.addEventListener('input', stop, true);
+    }
+
+    const fill = document.getElementById('scroll-progress-fill');
+    const links = Array.from(document.querySelectorAll('.progress-stops a'));
+
+    const updateProgress = () => {
+      const doc = document.documentElement;
+      const max = Math.max(1, doc.scrollHeight - window.innerHeight);
+      const pct = Math.max(0, Math.min(100, (window.scrollY / max) * 100));
+      if (fill) fill.style.width = pct + '%';
+
+      let active = links[0];
+      const marker = window.scrollY + window.innerHeight * 0.42;
+      links.forEach(link => {
+        const href = link.getAttribute('href');
+        const target = href === '#top'
+          ? document.getElementById('top')
+          : document.querySelector(href);
+        if (target && target.offsetTop <= marker) active = link;
+      });
+      links.forEach(link => link.classList.toggle('active', link === active));
+    };
+
+    if (!document.documentElement.dataset.progressEarlyBound) {
+      document.documentElement.dataset.progressEarlyBound = 'true';
+
+      links.forEach(link => {
+        link.addEventListener('click', event => {
+          const href = link.getAttribute('href');
+          if (!href || !href.startsWith('#')) return;
+          const target = href === '#top'
+            ? document.getElementById('top')
+            : document.querySelector(href);
+          if (!target) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const top = href === '#top'
+            ? 0
+            : target.getBoundingClientRect().top + window.scrollY - 18;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }, true);
+      });
+
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      window.addEventListener('resize', updateProgress);
+      updateProgress();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindClimateInteractions);
+  } else {
+    bindClimateInteractions();
+  }
+})();
+
 let mode = 'hot', di = 0;
 let countyData = null;
 let proj = null;
@@ -627,7 +725,7 @@ const COLORS = {
 
   const hm = { top:16, right:18, bottom:34, left:46 };
   const hW = 860 - hm.left - hm.right;
-  const hH = 220 - hm.top - hm.bottom;
+  const hH = 190 - hm.top - hm.bottom;
   const hSvg = d3.select('#histSvg').append('g').attr('transform', `translate(${hm.left},${hm.top})`);
   const xH = d3.scaleLinear().domain(d3.extent(years)).range([0, hW]);
   const yH = d3.scaleLinear().domain([0, 1]).range([hH, 0]);
@@ -644,7 +742,7 @@ const COLORS = {
     .call(g => g.selectAll('line').attr('stroke','rgba(190,235,255,0.10)').attr('x2',hW))
     .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.70)').style('font-size','10px'));
 
-  const coastlineGen = d3.line().x((d, i) => xH(years[i])).y(d => yH(d)).curve(d3.curveBasis);
+  const coastlineGen = d3.line().x((d, i) => xH(years[i])).y(d => yH(d)).curve(d3.curveMonotoneX);
   const sstNorm = sstVals.map(v => norm(v, sstVals));
   const slhNorm = slhVals.map(v => norm(v, slhVals));
   const prNorm = precVals.map(v => norm(v, precVals));
@@ -664,7 +762,7 @@ const COLORS = {
 
   const tm = { top: 18, right: 22, bottom: 36, left: 52 };
   const tW = 860 - tm.left - tm.right;
-  const tH = 200 - tm.top - tm.bottom;
+  const tH = 230 - tm.top - tm.bottom;
   const tSvg = d3.select('#tempTrendSvg').append('g').attr('transform', `translate(${tm.left},${tm.top})`);
   const xT = d3.scaleLinear().domain(d3.extent(years)).range([0, tW]);
   const yT = d3.scaleLinear()
@@ -737,7 +835,7 @@ const COLORS = {
 
   const lm = { top: 18, right: 22, bottom: 36, left: 52 };
   const lW = 860 - lm.left - lm.right;
-  const lH = 200 - lm.top - lm.bottom;
+  const lH = 230 - lm.top - lm.bottom;
   const lSvg = d3.select('#landTempTrendSvg').append('g').attr('transform', `translate(${lm.left},${lm.top})`);
   const xL = d3.scaleLinear().domain(d3.extent(landYears)).range([0, lW]);
   const yL = d3.scaleLinear().domain(d3.extent(landVals)).nice().range([lH, 0]);
@@ -795,11 +893,169 @@ const COLORS = {
     .attr('stroke','#ffd166')
     .attr('stroke-width',2.5);
 
-  const landValue = lSvg.append('text')
+  const landByYearForRelation = new Map(landTempData.map(d => [d.year, d.val]));
+  const relationData = sstData
+    .filter(d => landByYearForRelation.has(d.year))
+    .map(d => ({
+      year: d.year,
+      ocean: d.val - sstMean,
+      land: landByYearForRelation.get(d.year) - landMean
+    }));
+
+  const relationYears = relationData.map(d => d.year);
+  const oceanAnoms = relationData.map(d => d.ocean);
+  const landAnoms = relationData.map(d => d.land);
+  const meanOceanAnom = d3.mean(oceanAnoms);
+  const meanLandAnom = d3.mean(landAnoms);
+  const relationCov = d3.mean(relationData.map(d => (d.ocean - meanOceanAnom) * (d.land - meanLandAnom)));
+  const relationVarOcean = d3.mean(oceanAnoms.map(v => Math.pow(v - meanOceanAnom, 2)));
+  const relationStdOcean = Math.sqrt(relationVarOcean);
+  const relationStdLand = Math.sqrt(d3.mean(landAnoms.map(v => Math.pow(v - meanLandAnom, 2))));
+  const relationR = relationCov / (relationStdOcean * relationStdLand);
+  const relationSlope = relationCov / relationVarOcean;
+  const relationIntercept = meanLandAnom - relationSlope * meanOceanAnom;
+
+  const rm = { top: 30, right: 34, bottom: 58, left: 66 };
+  const rW = 860 - rm.left - rm.right;
+  const rH = 430 - rm.top - rm.bottom;
+  const rSvg = d3.select('#tempRelationSvg').append('g').attr('transform', `translate(${rm.left},${rm.top})`);
+  const xExtent = d3.extent(oceanAnoms);
+  const yExtent = d3.extent(landAnoms);
+  const xPad = (xExtent[1] - xExtent[0]) * 0.18 || 0.5;
+  const yPad = (yExtent[1] - yExtent[0]) * 0.18 || 0.5;
+  const xR = d3.scaleLinear().domain([xExtent[0] - xPad, xExtent[1] + xPad]).nice().range([0, rW]);
+  const yR = d3.scaleLinear().domain([yExtent[0] - yPad, yExtent[1] + yPad]).nice().range([rH, 0]);
+
+  rSvg.append('g').attr('transform', `translate(0,${rH})`)
+    .call(d3.axisBottom(xR).ticks(6).tickFormat(d => (d > 0 ? '+' : '') + d.toFixed(1) + '°'))
+    .call(g => g.select('.domain').attr('stroke','rgba(190,235,255,0.34)'))
+    .call(g => g.selectAll('line').attr('stroke','rgba(190,235,255,0.16)'))
+    .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.76)').style('font-size','11px'));
+
+  rSvg.append('g')
+    .call(d3.axisLeft(yR).ticks(6).tickFormat(d => (d > 0 ? '+' : '') + d.toFixed(1) + '°'))
+    .call(g => g.select('.domain').attr('stroke','rgba(190,235,255,0.34)'))
+    .call(g => g.selectAll('line').attr('stroke','rgba(190,235,255,0.16)').attr('x2',rW))
+    .call(g => g.selectAll('text').attr('fill','rgba(212,232,242,0.76)').style('font-size','11px'));
+
+  rSvg.append('line')
+    .attr('x1', xR(0)).attr('x2', xR(0))
+    .attr('y1', 0).attr('y2', rH)
+    .attr('stroke','rgba(190,235,255,0.16)')
+    .attr('stroke-dasharray','5,5');
+
+  rSvg.append('line')
+    .attr('x1', 0).attr('x2', rW)
+    .attr('y1', yR(0)).attr('y2', yR(0))
+    .attr('stroke','rgba(190,235,255,0.16)')
+    .attr('stroke-dasharray','5,5');
+
+  const regX0 = xR.domain()[0];
+  const regX1 = xR.domain()[1];
+  rSvg.append('line')
+    .attr('x1', xR(regX0)).attr('x2', xR(regX1))
+    .attr('y1', yR(relationIntercept + relationSlope * regX0))
+    .attr('y2', yR(relationIntercept + relationSlope * regX1))
+    .attr('stroke','#ff9f6e')
+    .attr('stroke-width',3)
+    .attr('stroke-linecap','round')
+    .attr('opacity',0.95);
+
+  const relationDots = rSvg.selectAll('.relation-dot')
+    .data(relationData)
+    .enter()
+    .append('circle')
+    .attr('class','relation-dot')
+    .attr('cx', d => xR(d.ocean))
+    .attr('cy', d => yR(d.land))
+    .attr('r', 5.8)
+    .attr('fill','rgba(86,241,212,0.68)')
+    .attr('stroke','rgba(255,255,255,0.68)')
+    .attr('stroke-width',1.2)
+    .attr('opacity',0.9);
+
+  rSvg.append('text')
+    .attr('x', 0)
+    .attr('y', -10)
+    .attr('fill','rgba(220,235,245,0.82)')
+    .style('font-size','12px')
+    .style('font-weight','850')
+    .text('Land temp anomaly');
+
+  rSvg.append('text')
+    .attr('x', rW)
+    .attr('y', rH + 44)
+    .attr('text-anchor','end')
+    .attr('fill','rgba(220,235,245,0.76)')
+    .style('font-size','12px')
+    .style('font-weight','850')
+    .text('Ocean temp anomaly');
+
+  const relationBadge = rSvg.append('g').attr('transform', `translate(${rW - 170},14)`);
+  relationBadge.append('rect')
+    .attr('width',170)
+    .attr('height',46)
+    .attr('rx',18)
+    .attr('fill','rgba(3,14,25,0.66)')
+    .attr('stroke','rgba(190,235,255,0.15)');
+  relationBadge.append('text')
+    .attr('x',16).attr('y',19)
+    .attr('fill','rgba(212,232,242,0.7)')
+    .style('font-size','10px')
+    .style('font-weight','900')
+    .style('letter-spacing','0.12em')
+    .text('CORRELATION');
+  relationBadge.append('text')
+    .attr('x',16).attr('y',38)
+    .attr('fill','#f2fbff')
+    .style('font-size','15px')
+    .style('font-weight','950')
+    .text('r = ' + relationR.toFixed(2));
+
+  const relationHalo = rSvg.append('circle')
+    .attr('r', 16)
+    .attr('fill','rgba(255,159,110,0.18)')
+    .attr('stroke','rgba(255,159,110,0.55)')
+    .attr('stroke-width',2.4);
+
+  const relationDot = rSvg.append('circle')
+    .attr('r', 10.5)
+    .attr('fill','#ffffff')
+    .attr('stroke','#ff9f6e')
+    .attr('stroke-width',4);
+
+  const relationLabel = rSvg.append('text')
     .attr('text-anchor','middle')
     .attr('fill','#f2fbff')
-    .style('font-size','11px')
-    .style('font-weight','900');
+    .style('font-size','12px')
+    .style('font-weight','950')
+    .style('paint-order','stroke')
+    .style('stroke','rgba(3,14,25,0.9)')
+    .style('stroke-width','4px');
+
+  const relationPointByYear = new Map(relationData.map(d => [d.year, d]));
+
+  function updateRelationMarker(yr) {
+    const point = relationPointByYear.get(+yr);
+    if (!point) return;
+
+    const px = xR(point.ocean);
+    const py = yR(point.land);
+
+    relationHalo.attr('cx', px).attr('cy', py);
+    relationDot.attr('cx', px).attr('cy', py);
+    relationLabel
+      .attr('x', px)
+      .attr('y', py - 18)
+      .text(yr);
+
+    relationDots
+      .attr('r', d => d.year === +yr ? 8.5 : 5.8)
+      .attr('fill', d => d.year === +yr ? '#ffffff' : 'rgba(86,241,212,0.68)')
+      .attr('stroke', d => d.year === +yr ? '#ff9f6e' : 'rgba(255,255,255,0.68)')
+      .attr('stroke-width', d => d.year === +yr ? 3.2 : 1.2)
+      .attr('opacity', d => d.year === +yr ? 1 : 0.82);
+  }
 
   function update(yr) {
     const i = years.indexOf(yr);
@@ -860,13 +1116,45 @@ const COLORS = {
         .attr('y', yL(landTemp) - 13)
         .text(landTemp.toFixed(1) + '°C');
     }
+
+    updateRelationMarker(yr);
   }
+
+  hSvg.append('rect')
+    .attr('class', 'hist-click-layer')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('width', hW)
+    .attr('height', hH)
+    .attr('fill', 'transparent')
+    .style('cursor', 'pointer')
+    .on('click', function(event) {
+      const [mx] = d3.pointer(event, this);
+      const rawYear = xH.invert(mx);
+      const closestYear = years.reduce((best, yr) =>
+        Math.abs(yr - rawYear) < Math.abs(best - rawYear) ? yr : best
+      , years[0]);
+      update(closestYear);
+    });
 
   const yearSliderInput = document.getElementById('yearSlider');
   const tempCompareSliderInput = document.getElementById('tempCompareSlider');
   if (yearSliderInput) yearSliderInput.addEventListener('input', e => update(+e.target.value));
-  if (tempCompareSliderInput) tempCompareSliderInput.addEventListener('input', e => update(+e.target.value));
+  if (tempCompareSliderInput) {
+    tempCompareSliderInput.addEventListener('input', e => {
+      const yr = +e.target.value;
+      try {
+        update(yr);
+      } catch (err) {
+        console.error(err);
+        const tempCompareYear = document.getElementById('tempCompareYear');
+        if (tempCompareYear) tempCompareYear.textContent = yr;
+        updateRelationMarker(yr);
+      }
+    });
+  }
   update(1997);
+  updateRelationMarker(1997);
 
 (function() {
   const root = document.documentElement;

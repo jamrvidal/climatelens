@@ -3307,3 +3307,605 @@ h1,h2,h3 {
   }
 }
 
+
+
+
+/* Ocean-land relationship dashboard update */
+.temp-compare-centered {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  gap: 0.85rem;
+}
+
+.temp-compare-heading {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.temp-compare-heading .metric-label {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.temp-compare-heading strong {
+  margin: 0.1rem auto 0.35rem;
+}
+
+.temp-compare-heading .chart-note {
+  max-width: 780px;
+  margin: 0.35rem auto 0;
+  text-align: center;
+}
+
+.temp-compare-centered #tempCompareSlider {
+  width: min(780px, 100%);
+}
+
+.temp-comparison-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(460px, 1.08fr);
+  grid-template-rows: repeat(2, minmax(0, auto));
+  gap: clamp(1rem, 1.8vw, 1.4rem);
+  align-items: stretch;
+  margin-top: var(--layout-card-gap, 1rem);
+}
+
+.temp-comparison-grid .history-card {
+  margin-top: 0;
+  min-height: 0;
+}
+
+.relation-temp-card {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  border-color: rgba(255, 159, 110, 0.16);
+}
+
+.temp-comparison-grid .viz-title-row {
+  min-height: 4.5rem;
+}
+
+.relation-temp-card .viz-title-row {
+  min-height: 5.2rem;
+}
+
+.temp-comparison-grid .viz-title-row h3 {
+  font-size: clamp(1.12rem, 1.32vw, 1.55rem);
+  line-height: 1.08;
+}
+
+.temp-comparison-grid .mini-legend-line {
+  white-space: nowrap;
+  font-size: 0.62rem;
+}
+
+.relation-note {
+  max-width: 36rem;
+  margin-top: 0.32rem;
+}
+
+#tempTrendSvg,
+#landTempTrendSvg {
+  display: block;
+  width: 100%;
+  height: 250px;
+  min-height: 250px;
+  margin-top: 0.25rem;
+}
+
+#tempRelationSvg {
+  display: block;
+  width: 100%;
+  height: 520px;
+  min-height: 520px;
+  margin-top: 0.25rem;
+}
+
+.relation-legend::before {
+  background: #ff9f6e;
+  box-shadow: 0 0 12px rgba(255, 159, 110, 0.42);
+}
+
+@media (max-width: 1180px) {
+  .temp-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .relation-temp-card {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  #tempTrendSvg,
+  #landTempTrendSvg,
+  #tempRelationSvg {
+    height: 300px;
+    min-height: 300px;
+  }
+
+  .temp-comparison-grid .viz-title-row,
+  .relation-temp-card .viz-title-row {
+    min-height: 0;
+  }
+}
+
+
+/* Relationship slider placement and dot emphasis */
+.relation-slider-panel {
+  width: 100%;
+  margin: 0.85rem 0 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 24px;
+}
+
+.relation-slider-panel .temp-compare-heading {
+  max-width: 720px;
+}
+
+.relation-slider-panel .temp-compare-heading strong {
+  font-size: clamp(2.2rem, 4vw, 3.1rem);
+  line-height: 0.95;
+}
+
+.relation-slider-panel .temp-compare-heading .chart-note {
+  font-size: clamp(0.9rem, 1vw, 1rem);
+  line-height: 1.45;
+}
+
+.relation-slider-panel #tempCompareSlider {
+  width: min(680px, 100%);
+}
+
+.relation-temp-card .viz-title-row {
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+#tempRelationSvg .relation-dot {
+  filter: drop-shadow(0 0 8px rgba(86, 241, 212, 0.35));
+}
+
+@media (max-width: 1180px) {
+  .relation-slider-panel {
+    margin-top: 0.75rem;
+  }
+}
+
+
+/* Relationship comfort layout and active-dot fix */
+.relation-temp-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.relation-temp-card .viz-title-row {
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.relation-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(230px, 0.62fr);
+  gap: clamp(0.9rem, 1.4vw, 1.25rem);
+  align-items: stretch;
+  flex: 1;
+}
+
+.relation-chart-shell {
+  min-width: 0;
+  border: 1px solid rgba(190, 235, 255, 0.08);
+  border-radius: 24px;
+  background: rgba(3, 14, 25, 0.18);
+  padding: 0.35rem 0.45rem 0.15rem;
+}
+
+.relation-control-rail {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.relation-slider-panel {
+  width: 100%;
+  margin: 0;
+  padding: 1rem;
+  border-radius: 24px;
+}
+
+.relation-slider-panel .temp-compare-heading {
+  max-width: none;
+}
+
+.relation-slider-panel .metric-label {
+  font-size: 0.62rem;
+}
+
+.relation-slider-panel .temp-compare-heading strong {
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  line-height: 0.9;
+  margin: 0.2rem auto 0.45rem;
+}
+
+.relation-slider-panel .temp-compare-heading .chart-note {
+  max-width: 20rem;
+  font-size: clamp(0.82rem, 0.88vw, 0.94rem);
+  line-height: 1.45;
+}
+
+.relation-slider-panel #tempCompareSlider {
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.relation-reading-note {
+  padding: 1rem;
+  border: 1px solid rgba(190, 235, 255, 0.11);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015));
+}
+
+.relation-reading-note span {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--color-teal);
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.relation-reading-note p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+#tempRelationSvg {
+  height: 460px;
+  min-height: 460px;
+}
+
+#tempRelationSvg .relation-dot {
+  filter: drop-shadow(0 0 8px rgba(86, 241, 212, 0.38));
+}
+
+@media (max-width: 1280px) {
+  .relation-body {
+    grid-template-columns: 1fr;
+  }
+
+  .relation-control-rail {
+    grid-template-columns: 1fr;
+  }
+
+  #tempRelationSvg {
+    height: 380px;
+    min-height: 380px;
+  }
+}
+
+
+/* Relationship chart-top layout */
+.relation-body-stacked {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.relation-body-stacked .relation-chart-shell {
+  min-height: 0;
+  padding: 0.55rem 0.65rem 0.25rem;
+}
+
+.relation-body-stacked #tempRelationSvg {
+  height: 430px;
+  min-height: 430px;
+}
+
+.relation-body-stacked .relation-slider-panel {
+  width: min(880px, 100%);
+  justify-self: center;
+  margin: 0;
+  padding: 0.9rem 1.15rem 1rem;
+  border-radius: 24px;
+}
+
+.relation-body-stacked .temp-compare-heading {
+  max-width: 760px;
+}
+
+.relation-body-stacked .temp-compare-heading strong {
+  font-size: clamp(2.5rem, 4.4vw, 3.7rem);
+  line-height: 0.9;
+}
+
+.relation-body-stacked .temp-compare-heading .chart-note {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.relation-body-stacked #tempCompareSlider {
+  width: min(720px, 100%);
+}
+
+.relation-control-rail,
+.relation-reading-note {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .relation-body-stacked #tempRelationSvg {
+    height: 360px;
+    min-height: 360px;
+  }
+}
+
+
+/* Coast dashboard compact viewport fit */
+#coast {
+  padding-top: clamp(2.2rem, 4vw, 3.4rem);
+  padding-bottom: clamp(3.5rem, 5vw, 4.6rem);
+}
+
+#coast .dashboard-shell {
+  gap: clamp(0.75rem, 1.2vw, 1rem);
+}
+
+#coast .year-control {
+  margin: 0.65rem 0 0.45rem;
+  padding: 0.8rem 1rem;
+  min-height: 0;
+}
+
+#coast .year-control strong,
+#coast #yearDisplay {
+  font-size: clamp(2.6rem, 5vw, 4.2rem);
+  line-height: 0.9;
+}
+
+#coast .metric-grid,
+#coast .gauge-grid {
+  gap: clamp(0.75rem, 1.2vw, 1rem);
+  margin-top: 0.65rem;
+}
+
+#coast .metric-card,
+#coast .gauge-card {
+  padding: clamp(0.8rem, 1.25vw, 1.05rem);
+  min-height: 0;
+}
+
+#coast .gauge-card h3 {
+  margin-bottom: 0.35rem;
+}
+
+#coast .gauge-value {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 0.9;
+  margin: 0.3rem 0;
+}
+
+#coast .gauge-bar-track {
+  margin-top: 0.75rem;
+}
+
+#coast .full-record-card {
+  margin-top: 0.75rem;
+  padding: clamp(0.85rem, 1.35vw, 1.1rem);
+}
+
+#coast .full-record-card .viz-title-row {
+  min-height: 0;
+  margin-bottom: 0.2rem;
+}
+
+#coast .full-record-card h3 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 0.95;
+}
+
+#coast .full-record-card .chart-label {
+  margin-bottom: 0.45rem;
+}
+
+#histSvg {
+  display: block;
+  height: clamp(210px, 23vh, 260px);
+  min-height: 210px;
+  margin-top: 0.2rem;
+}
+
+
+
+@media (max-height: 850px) and (min-width: 900px) {
+  #coast {
+    padding-top: 1.8rem;
+  }
+
+  #coast .year-control {
+    padding: 0.65rem 0.9rem;
+  }
+
+  #coast .gauge-value {
+    font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+  }
+
+  #histSvg {
+    height: 205px;
+    min-height: 205px;
+  }
+}
+
+
+/* Bottom bar alignment and coast graph width polish */
+.climate-progress {
+  left: 50%;
+  right: auto;
+  width: min(1120px, calc(100vw - 2rem));
+  transform: translateX(-50%);
+  transform-origin: bottom center;
+  bottom: max(0.55rem, env(safe-area-inset-bottom));
+  z-index: 99999;
+}
+
+#coast .dashboard-shell {
+  max-width: min(1520px, calc(100% - 1rem));
+}
+
+#coast .full-record-card {
+  width: min(1480px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(0.75rem, 1vw, 1rem);
+  padding-right: clamp(0.75rem, 1vw, 1rem);
+}
+
+#coast #histSvg {
+  width: 100%;
+}
+
+#coast .full-record-card svg {
+  overflow: visible;
+}
+
+@media (max-width: 900px) {
+  .climate-progress {
+    width: min(94vw, 760px);
+  }
+}
+
+
+/* Bridge title center and Full record legend */
+.bridge h2 {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bridge h2::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.full-record-title-row {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.full-record-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem 0.8rem;
+  max-width: 34rem;
+}
+
+.full-record-legend .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(220, 235, 245, 0.76);
+  font-size: clamp(0.68rem, 0.8vw, 0.82rem);
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.full-record-legend .legend-item::before {
+  content: "";
+  width: 1.8rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  box-shadow: 0 0 10px rgba(86, 241, 212, 0.24);
+}
+
+.full-record-legend .legend-sst::before {
+  background: #57c8ff;
+}
+
+.full-record-legend .legend-slh::before {
+  background: #56f1d4;
+}
+
+.full-record-legend .legend-pr::before {
+  background: #9ee493;
+}
+
+#histSvg {
+  cursor: pointer;
+}
+
+#histSvg .hist-click-layer {
+  pointer-events: all;
+}
+
+@media (max-width: 900px) {
+  .full-record-title-row {
+    align-items: flex-start;
+  }
+
+  .full-record-legend {
+    justify-content: flex-start;
+    margin-top: 0.3rem;
+  }
+}
+
+
+/* Bridge title vertical center only */
+.bridge .section-kicker {
+  margin: 0 0 1rem;
+}
+
+.bridge h2 {
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.bridge h2::after {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.bridge-copy-grid {
+  align-self: center;
+}
+
+
+/* Bridge title spacing refinement: keep layout, center title vertically */
+.bridge-inner {
+  min-height: clamp(38rem, 46vw, 45rem);
+  grid-template-rows: auto 1fr;
+  align-items: stretch;
+}
+
+.bridge .section-kicker {
+  grid-column: 1;
+  grid-row: 1;
+  margin: clamp(4.8rem, 7vw, 6rem) 0 1.7rem;
+  align-self: end;
+}
+
+.bridge h2 {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+  min-height: clamp(18rem, 24vw, 21rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bridge h2::after {
+  margin-top: 1.7rem;
+}
+
+.bridge-copy-grid {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}

@@ -358,44 +358,67 @@
       </div>
 
       <div class="history-card full-record-card">
-        <div class="viz-title-row">
+        <div class="viz-title-row full-record-title-row">
           <div>
             <p class="chart-label">Normalized record</p>
             <h3>Full record · 1950–2014</h3>
           </div>
-        </div>
-        <svg id="histSvg" width="100%" viewBox="0 0 860 220"></svg>
-      </div>
-
-      <div class="temp-compare-control">
-        <div>
-          <span class="metric-label">Ocean to land comparison</span>
-          <strong id="tempCompareYear">1997</strong>
-        </div>
-        <input type="range" min="1950" max="2014" value="1997" step="1" id="tempCompareSlider" aria-label="Select year for ocean and land temperature comparison">
-      </div>
-
-      <div class="history-card temp-trend-card">
-        <div class="viz-title-row">
-          <div>
-            <p class="chart-label">Coastal signal</p>
-            <h3>Coastal ocean temperature · 1950–2014</h3>
+          <div class="full-record-legend" aria-label="Full record line legend">
+            <span class="legend-item legend-sst">Sea surface temperature</span>
+            <span class="legend-item legend-slh">Sea level height</span>
+            <span class="legend-item legend-pr">Precipitation</span>
           </div>
-          <span class="mini-legend-line">selected year</span>
         </div>
-        <svg id="tempTrendSvg" width="100%" viewBox="0 0 860 200"></svg>
+        <svg id="histSvg" width="100%" viewBox="0 0 860 190"></svg>
       </div>
 
-      <div class="history-card temp-trend-card land-temp-card">
-        <div class="viz-title-row">
-          <div>
-            <p class="chart-label">Land response</p>
-            <h3>San Diego land mean temperature · 1950–2014</h3>
-            <p class="chart-note">Use the shared slider to compare whether ocean changes and land temperature move together in the selected year.</p>
+      <div class="temp-comparison-grid">
+        <div class="history-card temp-trend-card">
+          <div class="viz-title-row compact-title">
+            <div>
+              <p class="chart-label">Coastal signal</p>
+              <h3>Coastal ocean temperature · 1950–2014</h3>
+            </div>
+            <span class="mini-legend-line">selected year</span>
           </div>
-          <span class="mini-legend-line land-legend">selected year</span>
+          <svg id="tempTrendSvg" width="100%" viewBox="0 0 860 230"></svg>
         </div>
-        <svg id="landTempTrendSvg" width="100%" viewBox="0 0 860 200"></svg>
+
+        <div class="history-card temp-trend-card land-temp-card">
+          <div class="viz-title-row compact-title">
+            <div>
+              <p class="chart-label">Land response</p>
+              <h3>San Diego land mean temperature · 1950–2014</h3>
+            </div>
+            <span class="mini-legend-line land-legend">selected year</span>
+          </div>
+          <svg id="landTempTrendSvg" width="100%" viewBox="0 0 860 230"></svg>
+        </div>
+
+        <div class="history-card temp-trend-card relation-temp-card">
+          <div class="viz-title-row compact-title">
+            <div>
+              <p class="chart-label">Ocean ↔ land relationship</p>
+              <h3>Ocean and land temperature relationship · 1950–2014</h3>
+              <p class="chart-note relation-note">Each dot is one year. The selected dot moves with the shared slider.</p>
+            </div>
+            <span class="mini-legend-line relation-legend">selected year</span>
+          </div>
+          <div class="relation-body relation-body-stacked">
+            <div class="relation-chart-shell">
+              <svg id="tempRelationSvg" width="100%" viewBox="0 0 860 430"></svg>
+            </div>
+
+            <div class="relation-slider-panel temp-compare-control temp-compare-centered">
+              <div class="temp-compare-heading">
+                <span class="metric-label">Selected year</span>
+                <strong id="tempCompareYear">1997</strong>
+                <p class="chart-note">Use the shared slider to compare whether ocean and land temperature anomalies move together.</p>
+              </div>
+              <input type="range" min="1950" max="2014" value="1997" step="1" id="tempCompareSlider" aria-label="Select year for ocean and land temperature comparison">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
