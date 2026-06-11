@@ -1,4 +1,4 @@
-// Early interaction fallback: keep map Play and bottom navigation working even if later chart code fails.
+
 (() => {
   function bindClimateInteractions() {
     const playBtn = document.getElementById('play-years');
@@ -156,6 +156,34 @@ const SCALES = {
       return d3.interpolatePuRd(t);
     }
   }
+};
+
+window.updateMapScanner = function(name, hot, cold, range, selected) {
+  const scanName = document.getElementById('scan-name');
+  const scanHot = document.getElementById('scan-hot');
+  const scanCold = document.getElementById('scan-cold');
+  const scanRange = document.getElementById('scan-range');
+  const scanNote = document.getElementById('scan-note');
+  if (!scanName) return;
+  scanName.textContent = name + ' County';
+  if (scanHot) scanHot.textContent = hot;
+  if (scanCold) scanCold.textContent = cold;
+  if (scanRange) scanRange.textContent = range;
+  if (scanNote) scanNote.textContent = SCALES[mode].title + ' in ' + YEARS[di] + ': ' + selected + '. Click the county to pin its trend.';
+};
+
+window.resetMapScanner = function() {
+  const scanName = document.getElementById('scan-name');
+  const scanHot = document.getElementById('scan-hot');
+  const scanCold = document.getElementById('scan-cold');
+  const scanRange = document.getElementById('scan-range');
+  const scanNote = document.getElementById('scan-note');
+  if (!scanName) return;
+  scanName.textContent = 'Move over California';
+  if (scanHot) scanHot.textContent = '—';
+  if (scanCold) scanCold.textContent = '—';
+  if (scanRange) scanRange.textContent = '—';
+  if (scanNote) scanNote.textContent = 'Hover a county to turn the map into a small climate scanner.';
 };
 
 function getVal(county, m, i) {
