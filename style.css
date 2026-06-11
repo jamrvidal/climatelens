@@ -2766,3 +2766,50 @@ input[type="range"]::-webkit-slider-thumb {
     padding: 0.8rem !important;
   }
 }
+
+
+/* Tooltip/bottom clipping fix: let map hover label escape the map frame */
+.map-card {
+  overflow: visible;
+}
+
+.map-layout {
+  overflow: visible;
+}
+
+#map-wrap {
+  overflow: visible !important;
+  margin-bottom: 2.8rem;
+}
+
+#map-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2.8rem;
+  height: 2.8rem;
+  pointer-events: none;
+}
+
+#ca-svg {
+  border-radius: inherit;
+}
+
+#float-label {
+  z-index: 9999 !important;
+  max-width: 260px;
+  transform: translateY(-0.25rem);
+  filter: drop-shadow(0 18px 38px rgba(0, 0, 0, 0.42));
+}
+
+@media (max-width: 1120px) {
+  #map-wrap {
+    margin-bottom: 3.5rem;
+  }
+
+  #map-wrap::after {
+    bottom: -3.5rem;
+    height: 3.5rem;
+  }
+}
